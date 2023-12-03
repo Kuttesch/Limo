@@ -1,7 +1,7 @@
 #include <Stepper.h>
 
 int SPU = 2048;
-int MAX = 3;
+int MAX = 360;
 
 Stepper Motor(SPU, 8, 10, 9,11);
 
@@ -17,8 +17,9 @@ int target = 0;
 
 void loop() {
   if (Serial.available() > 0) {
-    target = Serial.parseInt(SKIP_NONE);
-    target = minimize(target);
+    target = normalize(Serial.parseInt(SKIP_NONE));
+    Serial.print("Target: ");
+    Serial.println(target);
   }
   if (position != target) {
     int distance = target - position;
@@ -30,9 +31,12 @@ void loop() {
   }
 }
 
-int minimize(int n) {
+int normalize(int n) {
     while (n >= MAX) {
       n -= MAX;
+    }
+    while (n < 0) {
+      n += MAX;
     }
     return n;
 }
@@ -40,7 +44,7 @@ int minimize(int n) {
 void move(int deg) {
   position += deg;
   Motor.step(getSteps(deg));
-  position = minimize(position);
+  position = normalize(position);
 }
 
 int getSteps(int deg) {
